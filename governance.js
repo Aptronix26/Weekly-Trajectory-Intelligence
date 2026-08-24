@@ -130,26 +130,32 @@
     const lobs = ["Mac", "iPhone", "iPad"];
     const totalsAvailable = Boolean(model && model.totals && model.sub && lobs.every(lob => Array.isArray(model.totals[lob]) && Array.isArray(model.sub[lob])));
     const modelCount = totalsAvailable ? lobs.reduce((count, lob) => count + model.sub[lob].length, 0) : 0;
+    const liveIndex = Number(model && model.completedWeeks);
+    const expectedWeeks = liveIndex + 1;
+    const liveWeek = model && model.liveWeek;
     const weekShapeValid = totalsAvailable && lobs.every(lob =>
-      model.totals[lob].length === 8 && model.sub[lob].every(row => Array.isArray(row.weeks) && row.weeks.length === 8)
+      Number.isInteger(liveIndex) && liveIndex >= 1 &&
+      model.totals[lob].length === expectedWeeks &&
+      model.sub[lob].every(row => Array.isArray(row.weeks) && row.weeks.length === expectedWeeks)
+    ) && Array.isArray(model.weeks) && model.weeks.length === expectedWeeks &&
+      Array.isArray(model.dates) && model.dates.length === expectedWeeks;
+    const liveTotalsReconcile = weekShapeValid && lobs.every(lob =>
+      close(model.sub[lob].reduce((total, row) => total + (Number(row.weeks[liveIndex]) || 0), 0), model.totals[lob][liveIndex])
     );
-    const liveTotalsReconcile = totalsAvailable && lobs.every(lob =>
-      close(model.sub[lob].reduce((total, row) => total + (Number(row.weeks[7]) || 0), 0), model.totals[lob][7])
-    );
-    const movementsReconcile = totalsAvailable && model.moves && lobs.every(lob => {
-      const expected = (Number(model.totals[lob][7]) / Number(model.totals[lob][6]) - 1) * 100;
-      return close(model.moves[lob] && model.moves[lob][7], expected);
+    const movementsReconcile = weekShapeValid && model.moves && lobs.every(lob => {
+      const expected = (Number(model.totals[lob][liveIndex]) / Number(model.totals[lob][liveIndex - 1]) - 1) * 100;
+      return close(model.moves[lob] && model.moves[lob][liveIndex], expected);
     });
-    const metadataValid = Boolean(model && model.latest && Number(model.w8Days) >= 1 && Number(model.w8Days) <= 7);
+    const metadataValid = Boolean(model && model.latest && liveWeek && model.weeks[liveIndex] === liveWeek && Number(model.liveDays) >= 1 && Number(model.liveDays) <= 7);
     return {
       source: config.governance && config.governance.source,
       coverage: `${modelCount} models · ${lobs.length} LOBs`,
       dataThrough: model && model.latest,
       checks: [
-        check("Weekly model shape", weekShapeValid, weekShapeValid ? "W1–W8 is available for every displayed model" : "One or more LOB or model is missing an eight-week series"),
-        check("W8 model reconciliation", liveTotalsReconcile, liveTotalsReconcile ? "Displayed model rows reconcile to each LOB live total" : "A W8 LOB total differs from its displayed model rows"),
-        check("W8 movement calculation", movementsReconcile, movementsReconcile ? "Live movement matches W8 versus W7 totals" : "A live movement differs from the displayed totals"),
-        check("Live-period metadata", metadataValid, metadataValid ? `${model.latest} · ${model.w8Days} elapsed days` : "The live as-of date or elapsed-day count is unavailable")
+        check("Weekly model shape", weekShapeValid, weekShapeValid ? `W1–${liveWeek} is available for every displayed model` : "One or more LOB or model is missing a weekly series"),
+        check(`${liveWeek || "Live week"} model reconciliation`, liveTotalsReconcile, liveTotalsReconcile ? "Displayed model rows reconcile to each LOB live total" : "A live LOB total differs from its displayed model rows"),
+        check(`${liveWeek || "Live week"} movement calculation`, movementsReconcile, movementsReconcile ? `Live movement matches ${liveWeek} versus W${liveIndex} totals` : "A live movement differs from the displayed totals"),
+        check("Live-period metadata", metadataValid, metadataValid ? `${model.latest} · ${model.liveDays} elapsed day${Number(model.liveDays) === 1 ? "" : "s"}` : "The live week, as-of date, or elapsed-day count is unavailable")
       ]
     };
   }
