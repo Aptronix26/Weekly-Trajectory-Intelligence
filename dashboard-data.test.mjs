@@ -9,7 +9,7 @@ assert.ok(match, "dashboard data block must be present");
 const data = JSON.parse(match[1]);
 
 const completed = {
-  Mac: [1074, 897, 627, 467, 508, 655, 1016, 668],
+  Mac: [1074, 897, 627, 467, 508, 655, 1016, 669],
   iPhone: [2240, 2527, 2386, 2955, 3296, 2952, 4394, 2484],
   iPad: [795, 670, 552, 484, 428, 349, 415, 311],
 };
@@ -23,7 +23,7 @@ test("completed W1-W8 history matches the workbook", () => {
 });
 
 test("W9 live totals reconcile to the displayed model rows", () => {
-  const expected = { Mac: 257, iPhone: 866, iPad: 135 };
+  const expected = { Mac: 360, iPhone: 1158, iPad: 182 };
   for (const [lob, total] of Object.entries(expected)) {
     assert.equal(data.totals[lob][8], total);
     assert.equal(data.sub[lob].reduce((sum, row) => sum + row.weeks[8], 0), total);
@@ -31,9 +31,9 @@ test("W9 live totals reconcile to the displayed model rows", () => {
 });
 
 test("as-of metadata and live movements are consistent", () => {
-  assert.equal(data.latest, "25 Aug 2026");
+  assert.equal(data.latest, "26 Aug 2026");
   assert.equal(data.liveWeek, "W9");
-  assert.equal(data.liveDays, 3);
+  assert.equal(data.liveDays, 4);
   assert.deepEqual(data.dates[7], { w: "W8", start: "16 Aug", end: "22 Aug" });
   assert.deepEqual(data.dates[8], { w: "W9", start: "23 Aug", end: "29 Aug" });
   for (const lob of Object.keys(completed)) {
@@ -57,13 +57,19 @@ test("every LOB total reconciles to its displayed sub-LOB rows", () => {
   }
 });
 
+test("new Mac models are included from the validated transaction dumps", () => {
+  const macModels = new Map(data.sub.Mac.map(row => [row.name, row.weeks]));
+  assert.equal(macModels.get('MBP M5 CTO 14" 2026 1TB')?.[7], 1);
+  assert.equal(macModels.get('MBP M5 CTO 16" 2026')?.[8], 1);
+});
+
 test("trajectory governance follows dynamic live-week metadata", () => {
   assert.match(governance, /model\.completedWeeks/);
   assert.match(governance, /model\.liveWeek/);
   assert.match(governance, /model\.liveDays/);
   assert.doesNotMatch(governance, /model\.w8Days/);
   assert.doesNotMatch(governance, /length === 8/);
-  assert.match(html, /governance\.js\?v=20260826-1/);
+  assert.match(html, /governance\.js\?v=20260827-1/);
 });
 
 test("shared intelligence navigation includes all five dashboards", () => {
