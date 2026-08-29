@@ -3,6 +3,14 @@
 
   const config = globalThis.DASHBOARD_CONFIG || {};
   const dashboardId = config.id || "unknown";
+  const dashboardTitles = {
+    "daily-mtd": "Daily MTD Intelligence",
+    "weekly-comparison": "Weekly Comparison Intelligence",
+    "quarter-to-date": "Quarter-to-Date Intelligence",
+    "year-over-year": "Year-on-Year Intelligence",
+    "weekly-trajectory": "Weekly Trajectory Intelligence"
+  };
+  const displayTitle = dashboardTitles[dashboardId] || config.title || "Intelligence Dashboard";
   const links = [
     { id: "daily-mtd", label: "Daily MTD", href: "https://aptronix26.github.io/Retail-Sales-MTD/" },
     { id: "weekly-comparison", label: "Weekly", href: "https://aptronix26.github.io/Boardroom-JAS-Weekly/" },
@@ -192,7 +200,7 @@
   shell.innerHTML = `
     <div class="governance-summary">
       <div class="governance-eyebrow">DATA CONFIDENCE</div>
-      <div class="governance-source" title="${governance.source}">${governance.source}</div>
+      <div class="governance-source">${displayTitle}</div>
       <div class="governance-facts">
         <span><b>Through</b> ${governance.dataThrough}</span>
         <span><b>Coverage</b> ${governance.coverage}</span>

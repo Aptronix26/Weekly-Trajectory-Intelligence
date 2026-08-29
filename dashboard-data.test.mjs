@@ -69,7 +69,7 @@ test("trajectory governance follows dynamic live-week metadata", () => {
   assert.match(governance, /model\.liveDays/);
   assert.doesNotMatch(governance, /model\.w8Days/);
   assert.doesNotMatch(governance, /length === 8/);
-  assert.match(html, /governance\.js\?v=20260827-1/);
+  assert.match(html, /governance\.js\?v=20260829-2/);
 });
 
 test("shared intelligence navigation includes all five dashboards", () => {
