@@ -24,7 +24,7 @@ test("completed W1-W9 history matches the workbook", () => {
 });
 
 test("W10 live totals reconcile to the displayed model rows", () => {
-  const expected = { Mac: 123, iPhone: 287, iPad: 55 };
+  const expected = { Mac: 264, iPhone: 710, iPad: 108 };
   for (const [lob, total] of Object.entries(expected)) {
     assert.equal(data.totals[lob][9], total);
     assert.equal(data.sub[lob].reduce((sum, row) => sum + row.weeks[9], 0), total);
@@ -32,11 +32,11 @@ test("W10 live totals reconcile to the displayed model rows", () => {
 });
 
 test("as-of metadata and live movements are consistent", () => {
-  assert.equal(data.latest, "30 Aug 2026");
+  assert.equal(data.latest, "1 Sep 2026");
   assert.equal(data.liveWeek, "W10");
-  assert.equal(data.liveDays, 1);
+  assert.equal(data.liveDays, 3);
   assert.deepEqual(data.dates[8], { w: "W9", start: "23 Aug", end: "29 Aug" });
-  assert.deepEqual(data.dates[9], { w: "W10", start: "30 Aug", end: "30 Aug" });
+  assert.deepEqual(data.dates[9], { w: "W10", start: "30 Aug", end: "1 Sep" });
   for (const lob of Object.keys(completed)) {
     const totals = data.totals[lob];
     for (let i = 1; i < totals.length; i += 1) {
@@ -68,7 +68,7 @@ test("the confidence strip uses the dashboard title, not the uploaded filename",
   assert.match(config, /title: "Q4 WoW Trend Intelligence"/);
   assert.match(config, /source: "Validated Mac, iPhone and iPad transaction dumps"/);
   assert.doesNotMatch(config, /\.xlsx/i);
-  assert.match(html, /dashboard-config\.js\?v=20260831-1/);
+  assert.match(html, /dashboard-config\.js\?v=20260902-1/);
 });
 
 test("trajectory governance follows dynamic live-week metadata", () => {
